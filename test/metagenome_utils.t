@@ -58,6 +58,7 @@ subtest 'run_prodigal' => sub {
 
     # override system locally to check what params we have been given
     {
+        no warnings 'redefine';
         local *MetagenomeUtils::_syscall = sub {
             cmp_deeply
                 \@_,
@@ -74,6 +75,7 @@ subtest 'run_prodigal' => sub {
     }
 
     {
+        no warnings 'redefine';
         local *MetagenomeUtils::_syscall = sub {
             # mimic death
             'Oh no! I died';
@@ -97,23 +99,21 @@ subtest 'parse_protein_translation_file' => sub {
     } qr/Could not read-open $file_not_found:/,
         'file not found error';
 
-    my $file_with_bad_line = '/path/to/bad/file';
-
     # create a file with an unparsable record
-    throws_ok {
-        MetagenomeUtils::parse_protein_translation_file( $file_with_bad_line );
-    } qr/Could not parse record:/,
-        'could not parse file with incorrect record';
+#     throws_ok {
+#         MetagenomeUtils::parse_protein_translation_file( '/path/to/dodgy/file' );
+#     } qr/Could not parse record:/,
+#         'could not parse file with incorrect record';
 
     my $expected = {
         # whatever the expected data structure is
     };
 
     # successful parse
-    cmp_deeply
-        MetagenomeUtils::parse_protein_translation_file( '/path/to/good/file' ),
-        $expected,
-        'got the expected data structure from parsing the translation file';
+#     cmp_deeply
+#         MetagenomeUtils::parse_protein_translation_file( '/path/to/good/file' ),
+#         $expected,
+#         'got the expected data structure from parsing the translation file';
 
 };
 
@@ -124,15 +124,15 @@ subtest 'parse_prodigal_output_file' => sub {
     } qr/Could not read-open $file_not_found:/,
         'file not found error';
 
-    my $expected = {
-        # whatever the expected data structure is
-    };
-
-    # successful parse
-    cmp_deeply
-        MetagenomeUtils::parse_prodigal_output_file( '/path/to/good/file' ),
-        $expected,
-        'got the expected data structure from parsing the prodigal output file';
+#     my $expected = {
+#         # whatever the expected data structure is
+#     };
+#
+#     # successful parse
+#     cmp_deeply
+#         MetagenomeUtils::parse_prodigal_output_file( '/path/to/good/file' ),
+#         $expected,
+#         'got the expected data structure from parsing the prodigal output file';
 
 };
 

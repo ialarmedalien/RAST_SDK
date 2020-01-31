@@ -214,7 +214,8 @@ sub parse_protein_translation_file {
         if ($contig_id && $left && $right && $strand && defined( $left_trunc ) && defined( $right_trunc ) ) {
             $seq =~ s/\*$//o;
             $strand = ( $strand == 1 ) ? '+' : '-';
-            $transH{ "$contig_id\t$left\t$right\t$strand" } = [ $seq, $left_trunc, $right_trunc ];
+            my $key = join "\t", $contig_id, $left, $right, $strand;
+            $transH{ $key } = [ $seq, $left_trunc, $right_trunc ];
         }
         else {
             die ("Could not parse record:\n",
@@ -253,32 +254,33 @@ sub parse_prodigal_output_file {
             next;
         }
 
-        if ( my ($num, $left, $right, $strand) = ( $line =~ m/^\>(\d+)_(\d+)_(\d+)_([+-])/o ) ) {
-            my ($beg, $end, $trunc_flag);
+        if ( my ( $num, $left, $right, $strand ) = ( $line =~ m/^\>(\d+)_(\d+)_(\d+)_([+-])/o ) ) {
+            my $key = join "\t", $contig_id, $left, $right, $strand;
+            unless ( @{ $translation_h->{ $key } } ) {
+                warn "No translation found for \"$sco_file\" line: $line\n";
+                next;
+            };
 
-            if ( my ( $seq, $trunc_left, $trunc_right ) = @ { $translation_h->{ "$contig_id\t$left\t$right\t$strand" } } ) {
-                my $len = 1 + $right - $left;
+            my $len = 1 + $right - $left;
+            my ( $beg, $end, $trunc_flag );
 
-                if ($strand eq '+') {
-                    ($beg, $end) = ($left, $right);
-                    $trunc_flag = "$trunc_left,$trunc_right";
-                }
-                else {
-                    ($beg, $end) = ($right, $left);
-                    $trunc_flag = "$trunc_right,$trunc_left";
-                }
+            my ( $seq, $trunc_left, $trunc_right ) = @{ $translation_h->{ $key } };
 
-                push @$encoded_tbl, [$contig_id, $beg, $end, $strand, $len, $seq, $trunc_flag];
+            if ( $strand eq '+' ) {
+                ( $beg, $end ) = ( $left, $right );
+                $trunc_flag = "$trunc_left,$trunc_right";
             }
             else {
-                warn "No translation found for \"$sco_file\" line: $line\n";
+                ( $beg, $end ) = ( $right, $left );
+                $trunc_flag = "$trunc_right,$trunc_left";
             }
+
+            push @$encoded_tbl, [ $contig_id, $beg, $end, $strand, $len, $seq, $trunc_flag ];
         }
         else {
             warn "Could not parse calls for \"$sco_file\" line: $line\n";
         }
     }
-    close($fh_sco);
 
     return $encoded_tbl;
 }
