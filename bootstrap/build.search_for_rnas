@@ -1,6 +1,7 @@
 #!/usr/bin/env perl
 
 use strict;
+use warnings;
 
 use Carp;
 use File::Basename;
@@ -35,7 +36,7 @@ my $mandir = "$progdir/man";
 
 chdir($search_for_rnas_dir);
 
-mkdir("$dest/search_for_rnas"); 
+mkdir("$dest/search_for_rnas");
 
 my $rc = system("cp", "-r", "alignments", "$dest/search_for_rnas/.");
 if ($rc != 0) {

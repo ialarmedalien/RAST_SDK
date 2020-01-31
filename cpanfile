@@ -10,3 +10,4 @@ requires "MIME::Base64"             => '3.15';
 requires "Set::IntervalTree"        => '0.12';
 requires "WWW::Mechanize"           => '1.95';
 requires "Try::Tiny"                => '0.30';
+requires "Ref::Util"                => '0.204';

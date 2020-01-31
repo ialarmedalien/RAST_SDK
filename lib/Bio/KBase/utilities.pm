@@ -1,6 +1,8 @@
 package Bio::KBase::utilities;
+
 use strict;
 use warnings;
+
 use Carp qw(cluck);
 use Config::Simple;
 use DateTime;
@@ -287,7 +289,7 @@ sub args {
 	    $args = {};
 	}
 	if (ref($args) ne "HASH") {
-		Bio::KBase::utilities::error("Arguments not hash");	
+		Bio::KBase::utilities::error("Arguments not hash");
 	}
 	if (defined($substitutions) && ref($substitutions) eq "HASH") {
 		foreach my $original (keys(%{$substitutions})) {
@@ -310,7 +312,7 @@ sub args {
 			if (!defined($args->{$argument})) {
 				$args->{$argument} = $optionalArguments->{$argument};
 			}
-		}	
+		}
 	}
 	return $args;
 }
@@ -340,7 +342,7 @@ sub conf {
 }
 
 #error: prints an error message
-sub error {	
+sub error {
 	my ($message) = @_;
     if (defined($config) && Bio::KBase::utilities::utilconf("fulltrace") == 1) {
 		Carp::confess($message);
@@ -364,7 +366,7 @@ sub close_debug {
 	}
 }
 
-sub create_context {	
+sub create_context {
 	my($parameters) = @_;
 	$parameters = Bio::KBase::utilities::args($parameters,["token","user"],{
 		method => "unknown",
@@ -408,7 +410,7 @@ sub timestamp {
 	if (defined($reset) && $reset == 1) {
 		$timestamp = DateTime->now()->datetime();
 	}
-	return $timestamp;	
+	return $timestamp;
 }
 
 {

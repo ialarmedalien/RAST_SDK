@@ -217,7 +217,7 @@ sub save_objects {
 				});
 			}
 		};
-		# If there is a network glitch, wait a second and try again. 
+		# If there is a network glitch, wait a second and try again.
 		if ($@) {
 			$error = $@;
 		} else {

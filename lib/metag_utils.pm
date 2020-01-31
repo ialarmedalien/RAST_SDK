@@ -500,5 +500,3 @@ sub rast_metagenome {
 
     return $annotated_metag->{genome_ref};
 }
-
-1;

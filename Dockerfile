@@ -6,11 +6,13 @@ MAINTAINER KBase Developer
 # any required dependencies for your module.
 
 # RUN apt-get update
+RUN cpanm --installdeps .
 RUN cpanm -i Config::IniFiles && \
     cpanm -i UUID::Random && \
     cpanm -i HTML::SimpleLinkExtor && \
     cpanm -i WWW::Mechanize --force && \
     cpanm -i MIME::Base64 && \
+    cpanm -i Set::IntervalTree && \
     apt-get -y install nano
 
 ADD ./bootstrap bootstrap
@@ -51,18 +53,17 @@ RUN cd /kb/dev_container/modules && \
 #RUN sed -i 's/capture_stderr/tee_stderr/' /kb/deployment/lib/Bio/KBase/GenomeAnnotation/GenomeAnnotationImpl.pm
 
 RUN \
-    cpanm install Set::IntervalTree && \
     cd /kb/deployment/services/kmer_annotation_figfam/ && \
     sed 's|$KB_TOP/deployment.cfg|/kb/module/deploy.cfg|' -i ./start_service  && \
     sed 's|$KB_TOP/services/kmer_annotation_figfam|/tmp/|' -i ./start_service  && \
-    sed 's/8/1/' -i ./start_service 
+    sed 's/8/1/' -i ./start_service
 
 RUN mkdir /data && \
     mkdir /data/Data.may1 && \
     mkdir /data/kmer
 
 #RUN sed -i 's/->port/->port, Passive=>1/' /kb/deployment/plbin/kmer-figfam-update-data.pl
-                                                           
+
 # -----------------------------------------
 
 COPY ./ /kb/module

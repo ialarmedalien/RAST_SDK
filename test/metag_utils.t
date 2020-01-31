@@ -1,7 +1,7 @@
 use Test::Most;
 use Data::Dumper::Concise;
 
-use_ok 'metag_utils';
+use_ok 'MetagenomeUtils';
 
 subtest 'testing build_prodigal_params' => sub {
 
@@ -9,7 +9,7 @@ subtest 'testing build_prodigal_params' => sub {
 
 
     throws_ok {
-        metag_utils::build_prodigal_params();
+        MetagenomeUtils::build_prodigal_params();
     }   qr!An input FASTA/Genbank file is required for Prodigal to run!,
         'build_prodigal_params dies without args';
 
@@ -27,7 +27,7 @@ subtest 'testing build_prodigal_params' => sub {
     for my $test ( @test_args ) {
 
         cmp_deeply
-            metag_utils::build_prodigal_params( @{ $test->{ input } } ),
+            MetagenomeUtils::build_prodigal_params( @{ $test->{ input } } ),
             [ @default, @{ $test->{ output } } ],
             'appropriate command line params with args ' . Dumper $test->{ input }
             or diag explain {
@@ -42,7 +42,7 @@ subtest 'testing build_prodigal_params' => sub {
 subtest 'run_prodigal' => sub {
 
     throws_ok {
-        metag_utils::run_prodigal()
+        MetagenomeUtils::run_prodigal()
     } qr/No parameters supplied to run_prodigal/,
         'run_prodigal dies without params';
 

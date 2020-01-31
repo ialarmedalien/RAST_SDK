@@ -1,11 +1,14 @@
 package RAST_SDK::RAST_SDKImpl;
+
 use strict;
+use warnings;
+
 use Bio::KBase::Exceptions;
 # Use Semantic Versioning (2.0.0-rc.1)
-# http://semver.org 
+# http://semver.org
 our $VERSION = '0.1.6';
 our $GIT_URL = 'https://github.com/qzzhang/RAST_SDK.git';
-our $GIT_COMMIT_HASH = 'ddf76aad271c968a43b52c7dacf7ce5fb7451807';
+our $GIT_COMMIT_HASH = '814290c267328efe7c9aac44f56110ef6f356d62';
 
 =head1 NAME
 
@@ -33,7 +36,7 @@ use Bio::KBase::GenomeAnnotation::Service;
 use LWP::UserAgent;
 use HTTP::Request;
 
-use metag_utils;
+use MetagenomeUtils;
 
 
 #Initialization function for call
@@ -112,7 +115,7 @@ sub util_get_contigs {
 		my $max_contigs = max_contigs();
 		for (my $i=0; $i < @{$array}; $i++) {
 			if (@{$obj->{contigs}} > $max_contigs){
-				Bio::KBase::Exceptions::ArgumentValidationError->throw(error => 'too many contigs', 
+				Bio::KBase::Exceptions::ArgumentValidationError->throw(error => 'too many contigs',
 										method_name => 'util_get_contigs');
 			}
 			if (length($array->[$i]) > 0) {
@@ -164,7 +167,7 @@ sub util_get_contigs {
 		my $newseq = $obj->{contigs}->[$i]->{sequence};
 		$totallength += length($newseq);
 		$newseq =~ s/[atAT]//g;
-		$gclength += length($newseq);	
+		$gclength += length($newseq);
 	}
 	$obj->{_gc} = int(1000*$gclength/$totallength+0.5);
 	$obj->{_gc} = $obj->{_gc}/1000;
@@ -172,7 +175,7 @@ sub util_get_contigs {
 }
 
 sub annotate_process {
-	my ($self,$parameters) = @_;	
+	my ($self,$parameters) = @_;
 	my $oldfunchash = {};
 	my $oldtype     = {};
 	#Creating default genome object
@@ -199,7 +202,7 @@ sub annotate_process {
 				if (defined($ftr->{protein_translation})) {
 					$ftr->{type} = 'gene';
 				} else {
-					$ftr->{type} = 'other'; 
+					$ftr->{type} = 'other';
 				}
 			}
 
@@ -231,7 +234,7 @@ sub annotate_process {
 				my $ftr = $inputgenome->{non_coding_features}->[$i];
 				if (!defined($ftr->{type})) {
 					$ftr->{type} = "Non-coding";
-				} 
+				}
 				$oldtype->{$ftr->{id}} = $ftr->{type};
 				#
 				#	Count the input feature types
@@ -245,7 +248,7 @@ sub annotate_process {
 		} else {
 			$inputgenome->{non_coding_features} = [];
 		}
-		
+
 		my $contigref;
 		if($inputgenome->{domain} !~ /Eukaryota|Plant/){
 		    if (defined($inputgenome->{contigset_ref})) {
@@ -262,7 +265,7 @@ sub annotate_process {
 		$parameters->{genetic_code} = $inputgenome->{genetic_code};
 		$parameters->{domain} = $inputgenome->{domain};
 		$parameters->{scientific_name} = $inputgenome->{scientific_name};
-		$contigobj = $self->util_get_contigs($parameters->{workspace},$parameters->{input_contigset});	
+		$contigobj = $self->util_get_contigs($parameters->{workspace},$parameters->{input_contigset});
 	} else {
 		Bio::KBase::utilities::error("Neither contigs nor genome specified!");
 	}
@@ -284,7 +287,7 @@ sub annotate_process {
 				delete $inputgenome->{contigs}->[$i]->{sequence};
 			}
 		}
-	
+
 		if ($contigobj->{_kbasetype} eq "ContigSet") {
 			$inputgenome->{contigset_ref} = $contigobj->{_reference};
 		} else {
@@ -295,7 +298,7 @@ sub annotate_process {
 		} else {
 			$message .= "The RAST algorithm was applied to annotating an existing genome: ".$parameters->{scientific_name}.". \nThe sequence for this genome is comprised of ".$count." contigs containing ".$size." nucleotides. \nThe input genome has ".@{$inputgenome->{features}}." existing coding features and ".@{$inputgenome->{non_coding_features}}." existing non-coding features.\n";
 			$message .= "NOTE: Older input genomes did not properly separate coding and non-coding features.\n" if (@{$inputgenome->{non_coding_features}} == 0);
-		}		
+		}
 	} else {
 		if($inputgenome->{domain} !~ /Eukaryota|Plant/){
 		    $message .= "The RAST algorithm was applied to annotating an existing genome: ".$parameters->{scientific_name}.". \nNo DNA sequence was provided for this genome, therefore new genes cannot be called. \nWe can only functionally annotate the ".@{$inputgenome->{features}}." existing features.\n";
@@ -310,7 +313,7 @@ sub annotate_process {
 			$message .= sprintf("\t%-30s %5d \n", $key, $types{$key});
 		}
 	}
-	
+
   	my $gaserv = Bio::KBase::GenomeAnnotation::GenomeAnnotationImpl->new();
   	my $workflow = {stages => []};
 	my $extragenecalls = "";
@@ -365,9 +368,9 @@ sub annotate_process {
 			push(@{$workflow->{stages}},{name => "call_pyrrolysoproteins"});
 			if (!defined($contigobj)) {
 				Bio::KBase::utilities::error("Cannot call genes on genome with no contigs!");
-			} 
+			}
 		} else {
-			$message .= "Did not call pyrrolysoproteins because the domain is $parameters->{domain}\n\n";	
+			$message .= "Did not call pyrrolysoproteins because the domain is $parameters->{domain}\n\n";
 		}
 	}
 	if (defined($parameters->{call_features_repeat_region_SEED}) && $parameters->{call_features_repeat_region_SEED} == 1)	{
@@ -425,7 +428,7 @@ sub annotate_process {
 				Bio::KBase::utilities::error("Cannot call genes on genome with no contigs!");
 			}
 		} else {
-			$message .= "Did not call crisprs because the domain is $parameters->{domain}\n\n";	
+			$message .= "Did not call crisprs because the domain is $parameters->{domain}\n\n";
 		}
 	}
 	$extragenecalls .= ".\n" if (length($extragenecalls) > 0);
@@ -544,7 +547,7 @@ sub annotate_process {
 		if ($tax_domain ne 'U' ) {
 			push(@{$workflow->{stages}},{name => "call_features_prophage_phispy"});
 		} else {
-			$message .= "Did not call call features prophage phispy because the domain is $parameters->{domain}\n\n";	
+			$message .= "Did not call call features prophage phispy because the domain is $parameters->{domain}\n\n";
 		}
 	}
 	$annomessage .= ".\n" if (length($annomessage) > 0);
@@ -558,7 +561,7 @@ sub annotate_process {
 				if (!defined($ftr->{protein_translation}) || $ftr->{type} =~ /pseudo/) {
 					#push(@{$replace}, @{$inputgenome->{features}}->[$i]);
 					push(@{$replace}, $ftr);
-				} 
+				}
 			}
 			$inputgenome->{features} = $replace;
 		}
@@ -669,7 +672,7 @@ sub annotate_process {
 					my $tmp = [];
 					foreach my $key (@{$ftr->{aliases}})  {
 						my @ary = ('alias',$key);
-						push(@{$tmp},\@ary); 
+						push(@{$tmp},\@ary);
 					}
 					$ftr->{aliases} = $tmp;
 				}
@@ -681,7 +684,7 @@ sub annotate_process {
 	}
 	my $count = 0;
 
-#	
+#
 #	Move non-coding features from features to non_coding_features
 #	They can have more than one location and they need md5 and dna_sequence_length
 #
@@ -711,7 +714,7 @@ sub annotate_process {
 		}
 
 	}
-	
+
 	if (defined($contigobj) && defined($contigobj->{contigs}) && scalar(@{$contigobj->{contigs}})>0 ) {
 		$genome->{num_contigs} = @{$contigobj->{contigs}};
 		$genome->{md5} = $contigobj->{md5};
@@ -872,7 +875,7 @@ sub annotate_process {
 									$advancedmessage .= "Found pyrrolysine-containing gene $ftr->{ontology_terms}->{SSO}->{$sso}\n";
 								}
 							}
-						}	
+						}
 					}
 				}
 			}
@@ -885,7 +888,7 @@ sub annotate_process {
 				$ftr->{type} = "gene"
 			}
 			if (exists $oldtype->{$ftr->{id}} && $oldtype->{$ftr->{id}} =~ /gene/) {
-				$ftr->{type} = $oldtype->{$ftr->{id}};					
+				$ftr->{type} = $oldtype->{$ftr->{id}};
 			}
 			if (defined($ftr->{location})) {
 				$ftr->{location}->[0]->[1] = $ftr->{location}->[0]->[1]+0;
@@ -979,7 +982,7 @@ sub annotate_process {
 				}
 
 			} else {
-				$num_non_coding++; 
+				$num_non_coding++;
 			}
 			my $type = '';
 			if ( defined$ftr->{type} && $ftr->{type} =~ /coding/) {
@@ -1074,7 +1077,7 @@ sub get_scientific_name_for_NCBI_taxon {
     $req->header('content-type', 'application/json');
     $req->content($content);
     my $ua = LWP::UserAgent->new();
-    
+
     my $ret = $ua->request($req);
     if (!$ret->is_success()) {
         print("Error body from Relation Engine on NCBI taxa query:\n" .
@@ -1482,9 +1485,9 @@ sub annotate_genomes
 	# Create a non-redundant replacement list:
 	#	1. Individual genomes and assemblies are added
 	#	2. Iterate over a Set to add to the replacement list
-	#	3. GenomeSets use a HASH and AssemblySets use an ARRAY  
+	#	3. GenomeSets use a HASH and AssemblySets use an ARRAY
 	#	4. Use perl grep to see if the ref is already in the list
-	#	5. Issue a warning when a duplicate is found so user knows what happened. 
+	#	5. Issue a warning when a duplicate is found so user knows what happened.
 	#
 	if (ref $genomes eq 'ARRAY') {
 		my $replace_genomes = [];
@@ -1511,7 +1514,7 @@ sub annotate_genomes
 							push(@$replace_genomes,$key);
 						}
 					}
-					
+
 				}
 			} else {
 				if ( grep( /^$ref$/, @$replace_genomes ) ) {
@@ -1524,7 +1527,7 @@ sub annotate_genomes
 		print STDERR "WARNiNG $warn\n";
 		$genomes = $replace_genomes;
 	}
-	
+
 	if (defined($params->{genome_text})) {
 		my $new_genome_list = [split(/[\n;\|]+/,$params->{genome_text})];
 		for (my $i=0; $i < @{$new_genome_list}; $i++) {
@@ -1589,7 +1592,7 @@ sub annotate_genomes
 			$currentparams->{'input_contigset'} = delete $currentparams->{'input_genome'};
 			delete $currentparams->{'retain_old_anno_for_hypotheticals'};
 		}
-			
+
 		eval {
 			my ($output,$message) = $self->annotate_process($currentparams);
 			push(@$output_genomes,$output->{ref});
@@ -1601,7 +1604,7 @@ sub annotate_genomes
 			$htmlmessage .= $input." succeeded!\n\n";
 		}
 	}
-		
+
     my $output_genomeset;
     if (defined $params->{output_genome} && $params->{output_genome} gt ' ') {
         my $output_genomeset = $params->{output_genome};
@@ -1814,35 +1817,38 @@ metagenome_ref is a string
 
 =cut
 
-sub annotate_metagenome
-{
-    my $self = shift;
-    my($params) = @_;
+sub annotate_metagenome {
+    my ( $self, $params ) = @_;
 
     my @_bad_arguments;
     (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"params\" (value was \"$params\")");
     if (@_bad_arguments) {
 	my $msg = "Invalid arguments passed to annotate_metagenome:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'annotate_metagenome');
+
+    Bio::KBase::Exceptions::ArgumentValidationError->throw(
+        error       => $msg,
+        method_name => 'annotate_metagenome'
+    );
     }
 
     my $ctx = $RAST_SDK::RAST_SDKServer::CallContext;
-    my($output);
+    my $output;
     #BEGIN annotate_metagenome
-    $metag_ref = metag_utils::rast_metagenome($params);
-    $output = {
-        "output_metagenome_ref" => $metag_ref,
-        "report_name" => "report_name",
-        "report_ref" => undef
+    $metag_ref  = MetagenomeUtils::rast_metagenome( $params );
+    $output     = {
+        output_metagenome_ref   => $metag_ref,
+        report_name             => "report_name",
+        report_ref              => undef,
     };
     #END annotate_metagenome
     my @_bad_returns;
     (ref($output) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"output\" (value was \"$output\")");
     if (@_bad_returns) {
 	my $msg = "Invalid returns passed to annotate_metagenome:\n" . join("", map { "\t$_\n" } @_bad_returns);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'annotate_metagenome');
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(
+	    error => $msg,
+        method_name => 'annotate_metagenome'
+    );
     }
     return($output);
 }
@@ -1850,7 +1856,7 @@ sub annotate_metagenome
 
 
 
-=head2 status 
+=head2 status
 
   $return = $obj->status()
 
@@ -2203,7 +2209,7 @@ Parameters for the annotate_genomes method.
                 relation_engine_timestamp_ms - the timestamp to send to the Relation Engine when looking
                         up taxon information in milliseconds since the epoch.
                 scientific_name - the scientific name of the genome. Overridden by ncbi_taxon_id.
-                
+
                 TODO: document remainder of parameters.
 
 
